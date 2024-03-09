@@ -7,6 +7,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+openai-whisper = {git = "https://github.com/openai/whisper.git", rev = "e58f28804528831904c3b6f2c0e473f346223433"}
+fastapi = "0.110.0"
 
 
 [build-system]
