@@ -1,4 +1,11 @@
-from typing import TypedDict
+from typing import NotRequired, TypedDict
+
+
+class TranscriptionWordResult(TypedDict):
+    word: str
+    start: float
+    end: float
+    probability: float
 
 
 class TranscriptionSegment(TypedDict):
@@ -12,6 +19,7 @@ class TranscriptionSegment(TypedDict):
     avg_logprob: float
     compression_ratio: float
     no_speed_prop: float
+    words: NotRequired[list[TranscriptionWordResult]]
 
 
 class TranscriptionResult(TypedDict):
