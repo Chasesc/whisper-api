@@ -1,14 +1,14 @@
-from typing import NotRequired, TypedDict
+from pydantic import BaseModel, Field
 
 
-class TranscriptionWordResult(TypedDict):
+class TranscriptionWordResult(BaseModel):
     word: str
     start: float
     end: float
     probability: float
 
 
-class TranscriptionSegment(TypedDict):
+class TranscriptionSegment(BaseModel):
     id: int
     seek: int
     start: float
@@ -18,11 +18,15 @@ class TranscriptionSegment(TypedDict):
     temperature: float
     avg_logprob: float
     compression_ratio: float
-    no_speed_prop: float
-    words: NotRequired[list[TranscriptionWordResult]]
+    no_speed_prop: float | None = None
+    words: list[TranscriptionWordResult] = Field(
+        default_factory=list,
+        description="Per word timings. Only returned when word_timestamps is true.",
+    )
 
 
-class TranscriptionResult(TypedDict):
+class TranscriptionResult(BaseModel):
     text: str
     segments: list[TranscriptionSegment]
     language: str
+    model_size: str

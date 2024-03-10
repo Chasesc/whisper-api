@@ -12,7 +12,7 @@ class _NoOpWrite:
     def __init__(self, name: str):
         self.name = name
 
-    def write(self, data: str) -> None:
+    def write(self, data: str | bytes) -> None:
         pass
 
 
