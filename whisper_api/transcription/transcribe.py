@@ -1,18 +1,19 @@
 from __future__ import annotations
 
 from functools import cache
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Final
 
-import whisper
 import torch
+import whisper
 
 from whisper_api.transcription.schemas import TranscriptionResult
 from whisper_api.transcription.utils import ensure_filepath
 
 if TYPE_CHECKING:
-    from numpy import floating, ndarray
+    from numpy import ndarray
 
 DEFAULT_MODEL: Final[str] = "base"
+
 
 def _find_best_device() -> torch.device | None:
     if torch.cuda.is_available():
@@ -28,7 +29,9 @@ DEFAULT_DEVICE: torch.device | None = _find_best_device()
 
 
 @cache
-def _load_model(model_size: str, device: torch.device | str | None = DEFAULT_DEVICE) -> whisper.Whisper:
+def _load_model(
+    model_size: str, device: torch.device | str | None = DEFAULT_DEVICE
+) -> whisper.Whisper:
     return whisper.load_model(model_size, device=device)
 
 
@@ -39,13 +42,13 @@ def preload_model(
     _load_model(model_size, device)
 
 
-def to_audio_buffer(audio: str | bytes) -> ndarray[floating[Any]]:
+def to_audio_buffer(audio: str | bytes) -> ndarray:
     with ensure_filepath(audio) as audio_file:
         return whisper.load_audio(audio_file)
 
 
 def transcribe(
-    audio_buffer: ndarray[floating[Any]],
+    audio_buffer: ndarray,
     *,
     model_size: str = DEFAULT_MODEL,
     device: torch.device | str | None = DEFAULT_DEVICE,
