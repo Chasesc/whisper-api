@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from functools import cache
+import hashlib
+import os
+from functools import cache, wraps
 from typing import TYPE_CHECKING, Final
 
 import torch
@@ -25,7 +27,8 @@ def _find_best_device() -> torch.device | None:
     return None
 
 
-DEFAULT_DEVICE: torch.device | None = _find_best_device()
+DEFAULT_DEVICE: Final[torch.device | None] = _find_best_device()
+MAX_CACHE_SIZE: Final[int] = int(os.getenv("WHISPER_API_MAX_CACHE_SIZE", 1000))
 
 
 @cache
@@ -47,6 +50,29 @@ def to_audio_buffer(audio: str | bytes) -> ndarray:
         return whisper.load_audio(audio_file)
 
 
+def _in_mem_simple_cache(func):
+    _transcripts_cache = {}
+
+    @wraps(func)
+    def wrappper(audio_buffer: ndarray, **kwargs):
+        buffer_hash = hashlib.sha1(audio_buffer.data.tobytes()).hexdigest()
+        cache_key = (buffer_hash, *[kwargs[key] for key in sorted(kwargs.keys())])
+
+        if cache_key in _transcripts_cache:
+            return _transcripts_cache[cache_key]
+
+        result = func(audio_buffer, **kwargs)
+
+        if len(_transcripts_cache) >= MAX_CACHE_SIZE:
+            _transcripts_cache.clear()
+
+        _transcripts_cache[cache_key] = result
+        return result
+
+    return wrappper
+
+
+@_in_mem_simple_cache
 def transcribe(
     audio_buffer: ndarray,
     *,
